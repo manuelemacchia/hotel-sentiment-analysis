@@ -30,7 +30,7 @@ A first analysis of the data shows that there are no missing values or empty str
 
 The dataset has been scraped from the TripAdvisor Italian website, therefore we expect to find comments written in Italian. Further exploration reveals reviews written in other languages such as English and Spanish. Chinese characters are present as well. This suggests that they were originally written in another language and subsequently translated to Italian.
 
-We show the distribution of review length in the following plot. For better visualization, we only consider reviews with length that falls within the 95th percentile. This means that reviews with more than 1800 characters are not shown.
+We show the distribution of review length in the following plot. For better visualization, we only take into account reviews with length that falls within the 95th percentile. This means that reviews with more than 1800 characters are not considered.
 
 ![Review length distribution](visual/review_length_distribution.png)
 
@@ -38,6 +38,4 @@ We can see that there is a slight difference between the length of positive and 
 
 A number of reviews contain spelling errors. We do not know the amount of misclassification errors caused by wrong spelling, but we assume that most misspelled words do not repeatedly appear in the dataset and therefore will be pruned in the data preprocessing step. We can also find words with repeated characters (e.g., "molto" may be written like "mooolto"). We will handle these words in preprocessing with a basic spell correction algorithm.
 
-The text of reviews contain emojis that express sentiment, which we shall consider in the analysis.
-
-Furthermore, special Unicode characters are present and should be removed.
+Many reviews contain Unicode emojis such as ❤️ and 😠, and text emoticons such as :) and :(. These characters express sentiment and we shall consider them when building the classification model.
