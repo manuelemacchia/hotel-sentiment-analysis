@@ -3,18 +3,18 @@
 ## Problem description
 We perform a sentiment analysis of textual reviews of hotel stays. We want to understand whether the users expressed positive or negative feelings in their comments. To do this, we build a binary classification model that is able to predict the sentiment contained in hotel reviews.
 
-We use a dataset that contains more than twenty thousand hotel reviews, scraped from the [tripadvisor.it](tripadvisor.it) Italian website. Each review is labeled either positive or negative. The Polytechnic University of Turin has provided this dataset for the Data Science Lab: Process and methods exam project in the academic year 2019/2020.
+We use a dataset that contains more than twenty thousand hotel reviews, scraped from the [tripadvisor.it](https://www.tripadvisor.it/) Italian website. Each review is labeled either positive or negative. The Polytechnic University of Turin has provided this dataset for the Data Science Lab: Process and methods exam project in the academic year 2019/2020.
 
 ## Implementation
-We use Python 3.7.5 and [Jupyter Notebook](jupyter.org). The following packages are required to run the code. We use the specified package versions.
-- [scikit-learn](scikit-learn.org) 0.22
-- [NumPy](numpy.org) 1.17.4
-- [pandas](pandas.pydata.org) 0.25.3
-- [Natural Language Toolkit](www.nltk.org) 3.4.5
-- [emoji](github.com/carpedm20/emoji) 0.5.4
-- [Matplotlib](matplotlib.org) 3.1.1
-- [seaborn](seaborn.pydata.org) 0.9.0
-- [WordCloud](github.com/amueller/word_cloud) 1.5.0
+We use Python 3.7.5 and [Jupyter Notebook](https://jupyter.org/). The following packages are required to run the code. We use the specified package versions.
+- [scikit-learn](https://scikit-learn.org/) 0.22
+- [NumPy](https://numpy.org/) 1.17.4
+- [pandas](https://pandas.pydata.org/) 0.25.3
+- [Natural Language Toolkit](https://www.nltk.org/) 3.4.5
+- [emoji](https://github.com/carpedm20/emoji) 0.5.4
+- [Matplotlib](https://matplotlib.org/) 3.1.1
+- [seaborn](https://seaborn.pydata.org/) 0.9.0
+- [WordCloud](https://github.com/amueller/word_cloud) 1.5.0
 
 ## Data exploration
 The dataset contains 28784 labeled reviews. We show its structure in the following table.
