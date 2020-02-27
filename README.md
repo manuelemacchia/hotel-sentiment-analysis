@@ -5,6 +5,17 @@ We perform a sentiment analysis of textual reviews of hotel stays. We want to un
 
 We use a dataset that contains more than twenty thousand hotel reviews, scraped from the [tripadvisor.it](tripadvisor.it) Italian website. Each review is labeled either positive or negative. The Polytechnic University of Turin has provided this dataset for the Data Science Lab: Process and methods exam project in the academic year 2019/2020.
 
+## Implementation
+We use Python 3.7.5 and [Jupyter Notebook](jupyter.org). The following packages are required to run the code. We use the specified package versions.
+- [scikit-learn](scikit-learn.org) 0.22
+- [NumPy](numpy.org) 1.17.4
+- [pandas](pandas.pydata.org) 0.25.3
+- [Natural Language Toolkit](www.nltk.org) 3.4.5
+- [emoji](github.com/carpedm20/emoji) 0.5.4
+- [Matplotlib](matplotlib.org) 3.1.1
+- [seaborn](seaborn.pydata.org) 0.9.0
+- [WordCloud](github.com/amueller/word_cloud) 1.5.0
+
 ## Data exploration
 The dataset contains 28784 labeled reviews. We show its structure in the following table.
 
@@ -34,8 +45,8 @@ We show the distribution of review length in the following plot. For better visu
 
 ![Review length distribution](visual/review_length_distribution.png)
 
-We can see that there is a slight difference between the length of positive and negative reviews. It appears that positive reviews are more concise than negative reviews, which suggests that users who had a bad experience tend to write more in-depth comments. Furthermore, both distributions are positively skewed, meaning that most users do not write very long reviews. In fact, we find that the majority of reviews have at most about 500 characters.
+We can see that there is a slight difference between the length of positive and negative reviews. It appears that positive reviews are usually more concise than negative reviews, which suggests that users who had a bad experience tend to write more in-depth comments. Furthermore, both distributions are positively skewed, meaning that most users do not write very long reviews. In fact, we find that the majority of reviews have at most about 500 characters.
 
 A number of reviews contain spelling errors. We do not know the amount of misclassification errors caused by wrong spelling, but we assume that most misspelled words do not repeatedly appear in the dataset and therefore will be pruned in the data preprocessing step. We can also find words with repeated characters (e.g., "molto" may be written like "mooolto"). We will handle these words in preprocessing with a basic spell correction algorithm.
 
-Many reviews contain Unicode emojis such as ❤️ and 😠, and text emoticons such as :) and :(. These characters express sentiment and we shall consider them when building the classification model.
+Many reviews contain Unicode emojis such as `❤️` and `😠`, and text emoticons such as `:)` and `:(`. These characters express sentiment and we shall consider them when building the classification model.
