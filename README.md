@@ -57,15 +57,15 @@ The dataset contains textual data from which we must extract a set of features. 
 ### Tokenization and stemming
 The tokenizer begins by dividing the document into substrings, or tokens, on any non-alphanumeric character it encounters when scanning the text.
 
-It handles text emoticons by looking for the strings `:)` and `:(`, and Unicode emojis with the help of the library [emoji](https://github.com/carpedm20/emoji). It creates a token for every one of these symbols present in the text.
-
-It discards punctuation tokens unless it finds an exclamation mark, a question mark or a currency symbol (`€` and `$`), as we speculate they carry additional meaning and may be useful to the classification algorithm.
+It handles text emoticons by looking for the strings `:)` and `:(`, and Unicode emojis with the help of the library [emoji](https://github.com/carpedm20/emoji). It creates a token for every one of these symbols present in the text. It discards punctuation tokens unless it finds an exclamation mark, a question mark or a currency symbol (`€` and `$`), as we speculate they carry additional meaning and may be useful to the classification algorithm.
 
 It removes any non-alphabetic character and does not consider tokens of length greater than w<sub>upper</sub> or less than w<sub>lower</sub>. Then, it applies a basic spell checking algorithm to the accepted tokens. It removes repeating characters from the beginning and the end of the token, and removes characters that are repeated more than twice in the middle of the token (e.g., “cciaaaaooo” becomes “ciaao”). This is not a perfect solution, but it should correct many spelling errors and, most importantly, it should produce tokens that will be correctly stemmed.
 
 It deletes words that appear in the Italian stopword list provided by the Natural Language Toolkit library. We add the word “hotel” which appears frequently in hotel reviews, as it does not have any positive or negative connotation. We remove the word “non” from the stopword list, which expresses negativity and therefore may be useful for a sentiment analysis task.
 
 As a final step, we use a stemmer to reduce inflected words to their root form (e.g., “parlare” becomes “parl”). We use a stemmer instead of a lemmatizer or a part-of-speech tagging algorithm as it runs significantly faster, can be easily implemented for languages other than English and delivers satisfying results for classifying tasks such as ours. We use the [Snowball](https://snowballstem.org/) stemmer which provides an algorithm for the Italian language. It is included in the Natural Language Toolkit library.
+
+We provide an example of our tokenization and stemming process. Consider the following sentence: “Il nostro soggiorno è stato davvero fantasticooo!”. It will be transformed into the following list of tokens: `['soggiorn', 'stat', 'davver', 'fantast', '!']`. Note that the stemmer converts all uppercase characters to lowercase.
 
 ### Weighting scheme
 
