@@ -59,15 +59,42 @@ The tokenizer begins by dividing the document into substrings, or tokens, on any
 
 It handles text emoticons by looking for the strings `:)` and `:(`, and Unicode emojis with the help of the library [emoji](https://github.com/carpedm20/emoji). It creates a token for every one of these symbols present in the text. It discards punctuation tokens unless it finds an exclamation mark, a question mark or a currency symbol (`€` and `$`), as we speculate they carry additional meaning and may be useful to the classification algorithm.
 
-It removes any non-alphabetic character and does not consider tokens of length greater than w<sub>upper</sub> or less than w<sub>lower</sub>. Then, it applies a basic spell checking algorithm to the accepted tokens. It removes repeating characters from the beginning and the end of the token, and removes characters that are repeated more than twice in the middle of the token (e.g., “cciaaaaooo” becomes “ciaao”). This is not a perfect solution, but it should correct many spelling errors and, most importantly, it should produce tokens that will be correctly stemmed.
+It removes any non-alphabetic character and does not consider tokens of length greater than _w<sub>upper</sub>_ or less than _w<sub>lower</sub>_. Then, it applies a basic spell checking algorithm to the accepted tokens. It removes repeating characters from the beginning and the end of the token, and removes characters that are repeated more than twice in the middle of the token (e.g., “cciaaaaooo” becomes “ciaao”). This is not a perfect solution, but it should correct many spelling errors and, most importantly, it should produce tokens that will be correctly stemmed.
 
-It deletes words that appear in the Italian stopword list provided by the Natural Language Toolkit library. We add the word “hotel” which appears frequently in hotel reviews, as it does not have any positive or negative connotation. We remove the word “non” from the stopword list, which expresses negativity and therefore may be useful for a sentiment analysis task.
+It deletes words that appear in the Italian stopword list provided by the Natural Language Toolkit library. It is a list of the most common words in the Italian language that are likely to have little semantic meaning, such as prepositions, articles and conjunctions. We add the word “hotel” which appears frequently in hotel reviews, as it does not have any positive or negative connotation. We remove the word “non” from the stopword list, which expresses negativity and therefore may be useful for a sentiment analysis task.
 
 As a final step, we use a stemmer to reduce inflected words to their root form (e.g., “parlare” becomes “parl”). We use a stemmer instead of a lemmatizer or a part-of-speech tagging algorithm as it runs significantly faster, can be easily implemented for languages other than English and delivers satisfying results for classifying tasks such as ours. We use the [Snowball](https://snowballstem.org/) stemmer which provides an algorithm for the Italian language. It is included in the Natural Language Toolkit library.
 
-We provide an example of our tokenization and stemming process. Consider the following sentence: “Il nostro soggiorno è stato davvero fantasticooo!”. It will be transformed into the following list of tokens: `['soggiorn', 'stat', 'davver', 'fantast', '!']`. Note that the stemmer converts all uppercase characters to lowercase.
+We provide an example of our tokenization and stemming output. Consider the following sentence: “Il nostro soggiorno è stato davvero fantasticooo!”. It will be transformed into the following list of tokens: `['soggiorn', 'stat', 'davver', 'fantast', '!']`. Note that the stemmer converts all uppercase characters to lowercase.
 
 ### Weighting scheme
+The tokenizer produces a list of tokens for every document in the collection. We use the bag-of-words model to represent the whole collection of reviews. Every token produced by the tokenizer is considered as a separate feature, therefore a document is represented by a vector of weights, one for each distinct token.
+
+We calculate the weight of each token with the term frequency-inverse document frequency (TFIDF) weighting scheme. Suppose we want to apply the TFIDF scheme to the following sample dataset, consisting of three documents.
+
+- L'hotel ha una posizione molto buona.
+- La stanza non è ben pulita.
+- L'hotel è molto pulito e la stanza è molto bella!
+
+After tokenization and stemming, we obtain the following tokens.
+
+- `['posizion', 'molt', 'buon']`
+- `['stanz', 'non', 'ben', 'pul']`
+- `['molt', 'pul', 'stanz', 'molt', 'bell', '!']`
+
+The TFIDF matrix representation of this sample dataset is the following. Rows represent document vectors and columns represent different features.
+
+|   | !      | bell   | ben    | buon   | molt   | non    | posizion | pul    | stanz  |
+|---|--------|--------|--------|--------|--------|--------|----------|--------|--------|
+| 0 | 0.0000 | 0.0000 | 0.0000 | 0.6228 | 0.4736 | 0.0000 | 0.6228   | 0.0000 | 0.0000 |
+| 1 | 0.0000 | 0.0000 | 0.5628 | 0.0000 | 0.0000 | 0.5628 | 0.0000   | 0.4280 | 0.4280 |
+| 2 | 0.4276 | 0.4276 | 0.0000 | 0.0000 | 0.6503 | 0.0000 | 0.0000   | 0.3252 | 0.3252 |
+
+More information about the computation of weights using this schema can be found on [scikit-learn's feature extraction module documentation](https://scikit-learn.org/stable/modules/feature_extraction.html#tfidf-term-weighting). In a nutshell, tokens occurring frequently in a single document but rarely in the whole collection have more weight.
+
+We use [scikit-learn's TFIDF vectorizer](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html) to convert our document collection to a matrix of TFIDF features. We extract unigrams and bigrams from the documents. This means that we extract features consisting of single tokens and contiguous sequences of two tokens. For example, consider the sentence “La stanza non è ben pulita”. The tokenizer produces four tokens: `stanz`, `non`, `ben`, `pul`. Therefore, the vectorizer extracts the following seven features: `stanz`, `non`, `ben`, `pul`, `stanz non`, `non ben`, `ben pul`.
+
+To improve the effectiveness of the classifier and avoid the [curse of dimensionality](https://en.wikipedia.org/wiki/Curse_of_dimensionality), we limit the number of features that we extract from the dataset. Therefore, we ignore features (terms) that appear in less than _df<sub>min</sub>_ documents and we set a maximum number of features _f<sub>max</sub>_.
 
 ### Word clouds
 We show two word clouds representing the frequencies of the extracted terms contained in positive and negative reviews respectively. Bigger words appear more frequently in our dataset.
