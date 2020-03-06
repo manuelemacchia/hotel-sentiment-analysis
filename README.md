@@ -65,7 +65,7 @@ It deletes words that appear in the Italian stopword list provided by the Natura
 
 As a final step, we use a stemmer to reduce inflected words to their root form (e.g., “parlare” becomes “parl”). We use a stemmer instead of a lemmatizer or a part-of-speech tagging algorithm as it runs significantly faster, can be easily implemented for languages other than English and delivers satisfying results for classifying tasks such as ours. We use the [Snowball](https://snowballstem.org/) stemmer which provides an algorithm for the Italian language. It is included in the Natural Language Toolkit library.
 
-We provide an example of our tokenization and stemming output. Consider the following sentence: “Il nostro soggiorno è stato davvero fantasticooo!”. It will be transformed into the following list of tokens: `['soggiorn', 'stat', 'davver', 'fantast', '!']`. Note that the stemmer converts all uppercase characters to lowercase.
+We provide an example of our tokenization and stemming output. Consider the following sentence: “Il nostro soggiorno è stato davvero fantasticooo!”. It will be transformed into the following list of tokens: `soggiorn`, `stat`, `davver`, `fantast`, `!`. Note that the stemmer converts all uppercase characters to lowercase.
 
 ### Weighting scheme
 The tokenizer produces a list of tokens for every document in the collection. We use the bag-of-words model to represent the whole collection of reviews. Every token produced by the tokenizer is considered as a separate feature, therefore a document is represented by a vector of weights, one for each distinct token.
@@ -78,9 +78,9 @@ We calculate the weight of each token with the term frequency-inverse document f
 
 After tokenization and stemming, we obtain the following tokens.
 
-- `['posizion', 'molt', 'buon']`
-- `['stanz', 'non', 'ben', 'pul']`
-- `['molt', 'pul', 'stanz', 'molt', 'bell', '!']`
+- `posizion`, `molt`, `buon`
+- `stanz`, `non`, `ben`, `pul`
+- `molt`, `pul`, `stanz`, `molt`, `bell`, `!`
 
 The TFIDF matrix representation of this sample dataset is the following. Rows represent document vectors and columns represent different features.
 
@@ -102,3 +102,16 @@ We show two word clouds representing the frequencies of the extracted terms cont
 ![Positive reviews word cloud](visual/wordcloud_positive.png)
 
 ![Negative reviews word cloud](visual/wordcloud_negative.png)
+
+## Algorithm choice
+We use a supervised learning algorithm to train a classifier able to identify positive and negative reviews accurately.
+
+There are many algorithms available to perform text classification. Naive Bayes and support vector machines are very effective in high-dimensional spaces not unlike ours. Both methods are highly regarded in academic literature for sentiment analysis tasks. For these reasons we take both into consideration.
+
+The scikit-learn library provides a set of naive Bayes classifier implementations, including [multinomial naive Bayes](https://scikit-learn.org/stable/modules/naive_bayes.html#multinomial-naive-bayes) and [complement naive Bayes](https://scikit-learn.org/stable/modules/naive_bayes.html#complement-naive-bayes). The latter is an adaptation of the standard multinomial algorithm that is particularly suited for imbalanced dataset such as ours. The library also provides the [C-support vector classification algorithm (SVC)](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) which is a support vector machine algorithm that employes a regularization parameter.
+
+We compare the complement naive Bayes classifier to support vector machines, and in particular to SVC. We consider the weighted F1 score as the main metric to measure performance, to account for class distribution imbalance. While the naive Bayes classifier is significantly faster in training and prediction, the support vector machine performs slightly better in prediction. The speed difference becomes more significant as the dataset grows larger in size, therefore the naive Bayes classifier may be a better choice in production environments. We do not have any time constraint, therefore we choose support vector machines for our classification problem.
+
+For two-class, separable training datasets, the support vector machine searches for a linear separator between the classes. It looks for a decision hyperplane that is maximally far away from any data point in the training set. Our training set is a two-class dataset, but it does not seem to be sufficiently separable by a linear model. Therefore, we explore other nonlinear support vector machines that map the original feature space to some higher-dimensional feature space where our training set is better separable. We find that the best suited kernel for our data is the radial basis function kernel and we choose a regularization parameter _C<sub>0</sub>_.
+
+## Tuning and validation
