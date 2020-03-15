@@ -84,11 +84,11 @@ After tokenization and stemming, we obtain the following tokens.
 
 The TFIDF matrix representation of this sample dataset is the following. Rows represent document vectors and columns represent different features.
 
-|   | !      | bell   | ben    | buon   | molt   | non    | posizion | pul    | stanz  |
-|---|--------|--------|--------|--------|--------|--------|----------|--------|--------|
-| 0 | 0.0000 | 0.0000 | 0.0000 | 0.6228 | 0.4736 | 0.0000 | 0.6228   | 0.0000 | 0.0000 |
-| 1 | 0.0000 | 0.0000 | 0.5628 | 0.0000 | 0.0000 | 0.5628 | 0.0000   | 0.4280 | 0.4280 |
-| 2 | 0.4276 | 0.4276 | 0.0000 | 0.0000 | 0.6503 | 0.0000 | 0.0000   | 0.3252 | 0.3252 |
+|   | `!`    | `bell` | `ben`  | `buon` | `molt` | `non`  | `posizion` | `pul`  | `stanz` |
+|---|--------|--------|--------|--------|--------|--------|------------|--------|---------|
+| 0 | 0.0000 | 0.0000 | 0.0000 | 0.6228 | 0.4736 | 0.0000 | 0.6228     | 0.0000 | 0.0000  |
+| 1 | 0.0000 | 0.0000 | 0.5628 | 0.0000 | 0.0000 | 0.5628 | 0.0000     | 0.4280 | 0.4280  |
+| 2 | 0.4276 | 0.4276 | 0.0000 | 0.0000 | 0.6503 | 0.0000 | 0.0000     | 0.3252 | 0.3252  |
 
 More information about the computation of weights using this schema can be found on [scikit-learn's feature extraction module documentation](https://scikit-learn.org/stable/modules/feature_extraction.html#tfidf-term-weighting). In a nutshell, tokens occurring frequently in a single document but rarely in the whole collection have more weight.
 
@@ -110,8 +110,21 @@ There are many algorithms available to perform text classification. Naive Bayes 
 
 The scikit-learn library provides a set of naive Bayes classifier implementations, including [multinomial naive Bayes](https://scikit-learn.org/stable/modules/naive_bayes.html#multinomial-naive-bayes) and [complement naive Bayes](https://scikit-learn.org/stable/modules/naive_bayes.html#complement-naive-bayes). The latter is an adaptation of the standard multinomial algorithm that is particularly suited for imbalanced dataset such as ours. The library also provides the [C-support vector classification algorithm (SVC)](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) which is a support vector machine algorithm that employes a regularization parameter.
 
-We compare the complement naive Bayes classifier to support vector machines, and in particular to SVC. We consider the weighted F1 score as the main metric to measure performance, to account for class distribution imbalance. While the naive Bayes classifier is significantly faster in training and prediction, the support vector machine performs slightly better in prediction. The speed difference becomes more significant as the dataset grows larger in size, therefore the naive Bayes classifier may be a better choice in production environments. We do not have any time constraint, therefore we choose support vector machines for our classification problem.
+We compare the complement naive Bayes classifier to support vector machines, and in particular to SVC. We consider the weighted [F1 score](https://en.wikipedia.org/wiki/F1_score) as the main metric to measure performance, to account for class distribution imbalance. While the naive Bayes classifier is significantly faster in training and prediction, the support vector machine performs slightly better in prediction. The speed difference becomes more significant as the dataset grows larger in size, therefore the naive Bayes classifier may be a better choice in production environments. We do not have any time constraint, therefore we choose support vector machines for our classification problem.
 
 For two-class, separable training datasets, the support vector machine searches for a linear separator between the classes. It looks for a decision hyperplane that is maximally far away from any data point in the training set. Our training set is a two-class dataset, but it does not seem to be sufficiently separable by a linear model. Therefore, we explore other nonlinear support vector machines that map the original feature space to some higher-dimensional feature space where our training set is better separable. We find that the best suited kernel for our data is the radial basis function kernel and we choose a regularization parameter _C<sub>0</sub>_.
 
 ## Tuning and validation
+We split the original dataset into a training set and a test set. We use the training set to fit the classification model and the test set to evaluate it, therefore we make sure that the class distribution of both sets are similar. To do this, we use [scikit-learn's `train_test_split`](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html) with the parameter `stratify`. We hold out twenty percent of the available data as a test set and we use the remaining eighty percent for training and validation.
+
+
+### Preprocessing tuning
+We use the multinomial naive Bayes classifier as a baseline to tune our data preprocessing procedure, as this model is very fast in training and prediction. We use the default additive smoothing parameter _α_ = 1. We use the test set to evaluate all parameter changes.
+
+First, we tune the parameters of the tokenizer. We set _w<sub>upper</sub>_ = 20 and consider different values for _w<sub>lower</sub>_. We get the best results by using _w<sub>lower</sub>_ = 3. If we use a higher value, we ignore too many important features, such as the token “non” that prevails in negative reviews. If we use a lower value, we introduce a large amount of noise that degrades the performance of our classifier.
+
+We try to retain both alphabetic and numeric characters, but this results in worse performance than only keeping alphabetic characters. We initially use the default set of stopwords for the Italian language provided by the Natural Language Toolkit library, and then we modify this set by adding the domain-specific stopword “hotel” and removing “non”, mostly used in negative reviews. This yields better predictions.
+
+After tuning the tokenizer, we change the parameters of the TFIDF vectorizer. We set _df<sub>min</sub>_ = 2 to ignore all features that appear in only one document. This reduces the number of features from almost 700000 to less than 200000. However, the number of features is still an order of magnitude greater than the number of samples. Therefore, we set an upper bound of _f<sub>max</sub>_ = 15000 features. The classifier now reaches a weighted F1 score of 0.9551, which means that it is able to correctly classify most of the test set.
+
+### Model tuning and validation
